@@ -3,6 +3,7 @@ package main
 import (
 	"bufio"
 	"fmt"
+	"strconv"
 	"strings"
 	"time"
 
@@ -18,10 +19,18 @@ type Task struct {
 	UpdatedAt   time.Time
 }
 
-func add(desc string, id int, tasks []Task){
+func add(desc string, id int, tasks []Task) []Task {
 	fmt.Println("the descriptions is:", desc)
 	fmt.Println("the id is", id)
-	
+	task := Task{
+		Id: id,
+		Description: desc,
+		Status: "todo",
+		CreatedAt: time.Now(),
+		UpdatedAt: time.Now(),
+	}
+	tasks = append(tasks, task)
+	return tasks
 }
 
 func list(cmd string){
@@ -59,6 +68,16 @@ func list(cmd string){
 		}
 	}
 }
+
+func update(tasks []Task, id int, desc string)[]Task{
+	for i, v := range tasks{
+		if (v.Id == id){
+			tasks[i].Description = desc
+		}
+	}
+	return tasks
+}
+
 /*
 Add, Update, and Delete tasks
 
@@ -81,41 +100,12 @@ func main() {
 		1.assemble and arrange (a group of people, especially troops) in order.
 	*/
 
-	
-	task1 := Task{
-		Id:          1,
-		Description: "List all tasks",
-		Status:      "done",
-		CreatedAt:   time.Now(),
-		UpdatedAt:   time.Now(),
-	}
-	task2 := Task{
-		Id:          2,
-		Description: "List all tasks that are done",
-		Status:      "in-progress",
-		CreatedAt:   time.Now(),
-		UpdatedAt:   time.Now(),
-	}
-	task3 := Task{
-		Id:          3,
-		Description: "List all tasks that are not done",
-		Status:      "todo",
-		CreatedAt:   time.Now(),
-		UpdatedAt:   time.Now(),
-	}
-	task4 := Task{
-		Id:          3,
-		Description: "list all tasks that are in progress",
-		Status:      "in-progress",
-		CreatedAt:   time.Now(),
-		UpdatedAt:   time.Now(),
-	}
-	
 	var tasks []Task
-	tasks = append(tasks, task1, task2, task3, task4)
-	newTask, _ := json.Marshal(tasks)
-	//////////////////////////////////////
 
+	id := 0
+
+	scanner := bufio.NewScanner(os.Stdin)
+	
 	file, err := os.Create("tasks.json")
 	if err != nil {
 		fmt.Println("Error creating file:", err)
@@ -123,21 +113,23 @@ func main() {
 
 	defer file.Close()
 
-	file.WriteString(string(newTask))
-
-	id := 0
-
-	scanner := bufio.NewScanner(os.Stdin)
-	
 	for scanner.Scan() {
 		command := scanner.Text()
-		cmd := strings.SplitN(command, " ", 2)
-
+		cmd := strings.SplitN(command, " ", 3)
 		switch cmd[0] {
 		case "add":
-				add(strings.Trim(cmd[1], `"`), id+1, tasks)
+				file, err := os.Create("tasks.json")
+				if err != nil {
+					fmt.Println("Error creating file:", err)
+				}
+				id++;
+				tasks = add(strings.Trim(cmd[1], `"`), id, tasks)
+				fmt.Println(len(tasks))
+				newTask, _ := json.Marshal((tasks))
+				file.WriteString(string(newTask))
 		case "update":
-			fmt.Println("update")
+			idconv, _:= strconv.Atoi(cmd[1])
+			tasks = update(tasks, idconv, strings.Trim(cmd[2], `"`))
 		case "delete":
 			fmt.Println("delete")
 		case "list":
