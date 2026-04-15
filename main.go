@@ -3,7 +3,7 @@ package main
 import (
 	"bufio"
 	"fmt"
-	"strconv"
+	//"strconv"
 	"strings"
 	"time"
 
@@ -22,6 +22,8 @@ type Task struct {
 func add(desc string, id int, tasks []Task) []Task {
 	fmt.Println("the descriptions is:", desc)
 	fmt.Println("the id is", id)
+	
+
 	task := Task{
 		Id: id,
 		Description: desc,
@@ -29,6 +31,13 @@ func add(desc string, id int, tasks []Task) []Task {
 		CreatedAt: time.Now(),
 		UpdatedAt: time.Now(),
 	}
+
+	data, _ := os.ReadFile("tasks.json")
+
+	if len(tasks) > 0{
+		json.Unmarshal(data, &tasks)
+	}
+
 	tasks = append(tasks, task)
 	return tasks
 }
@@ -115,29 +124,30 @@ func main() {
 
 	for scanner.Scan() {
 		command := scanner.Text()
-		cmd := strings.SplitN(command, " ", 3)
-		switch cmd[0] {
+		cmd, task, found := strings.Cut(command, " ")
+		switch cmd {
 		case "add":
-				file, err := os.Create("tasks.json")
-				if err != nil {
-					fmt.Println("Error creating file:", err)
-				}
-				id++;
-				tasks = add(strings.Trim(cmd[1], `"`), id, tasks)
-				fmt.Println(len(tasks))
-				newTask, _ := json.Marshal((tasks))
-				file.WriteString(string(newTask))
+			id++;
+			if found{
+				//TODO: see if i can increment inside the id
+				tasks = add(strings.Trim(task, ""), id, tasks)
+			}
+			newTask, _ := json.MarshalIndent(tasks, "", " ")
+			//TODO: everytime a write a new task the whole thing get added to the json file instead of just the actual task, fix.
+			os.WriteFile("tasks.json", newTask, 0)
 		case "update":
-			idconv, _:= strconv.Atoi(cmd[1])
-			tasks = update(tasks, idconv, strings.Trim(cmd[2], `"`))
+			fmt.Println("update")
+			//idconv, _:= strconv.Atoi(cmd[1])
+			//tasks = update(tasks, idconv, strings.Trim(cmd[2], `"`))
 		case "delete":
 			fmt.Println("delete")
 		case "list":
-			if len(cmd) ==2{
+			fmt.Println("list")
+			/*if len(cmd) ==2{
 				list(cmd[1])
 			}else{
 				list("")
-			}			
+			}	*/		
 		}
 	}
 }
