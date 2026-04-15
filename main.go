@@ -3,7 +3,7 @@ package main
 import (
 	"bufio"
 	"fmt"
-	//"strconv"
+	"strconv"
 	"strings"
 	"time"
 
@@ -30,12 +30,6 @@ func add(desc string, id int, tasks []Task) []Task {
 		Status: "todo",
 		CreatedAt: time.Now(),
 		UpdatedAt: time.Now(),
-	}
-
-	data, _ := os.ReadFile("tasks.json")
-
-	if len(tasks) > 0{
-		json.Unmarshal(data, &tasks)
 	}
 
 	tasks = append(tasks, task)
@@ -77,11 +71,17 @@ func list(cmd string){
 }
 
 func update(tasks []Task, id int, desc string)[]Task{
+	
 	for i, v := range tasks{
 		if (v.Id == id){
 			tasks[i].Description = desc
+			updated, _ := json.MarshalIndent(tasks, "", " ")
+			os.WriteFile("tasks.json", updated, 0644)
+			return tasks
 		}
 	}
+	
+	fmt.Println("No such id for any task. Try again.")
 	return tasks
 }
 
@@ -134,8 +134,15 @@ func main() {
 			os.WriteFile("tasks.json", newTask, 0)
 		case "update":
 			fmt.Println("update")
-			//idconv, _:= strconv.Atoi(cmd[1])
-			//tasks = update(tasks, idconv, strings.Trim(cmd[2], `"`))
+			id, description, found := strings.Cut(task, " ")
+			fmt.Println(found, id, description)
+			idconverted, _:= strconv.Atoi(id)
+			if found{
+				tasks = update(tasks, idconverted, strings.Trim(description, `"`))
+			} else{
+				fmt.Println("Update what?! Try again.")
+			}
+
 		case "delete":
 			fmt.Println("delete")
 		case "list":
