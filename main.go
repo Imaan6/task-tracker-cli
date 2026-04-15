@@ -19,6 +19,21 @@ type Task struct {
 	UpdatedAt   time.Time
 }
 
+func delete(id int, tasks []Task)[]Task{
+
+	for i, v := range(tasks){
+		if v.Id == id{
+			tasks = append(tasks[:i], tasks[i+1:]...)
+			updated, _ := json.MarshalIndent(tasks, "", " ")
+			os.WriteFile("tasks.json", updated, 0644)
+			return tasks
+		}
+	}
+
+	fmt.Println("No such tasks with this id. Try again.")
+	return tasks
+}
+
 func add(desc string, id int, tasks []Task) []Task {
 	fmt.Println("the descriptions is:", desc)
 	fmt.Println("the id is", id)
@@ -61,7 +76,7 @@ func list(cmd string){
 
 	for _ , v:= range tasks{
 		if cmd == "all"{
-			fmt.Println(v.Id,"-", v.Description)
+			fmt.Println("ID:",v.Id,"-", v.Description)
 			continue
 		}
 		if v.Status == status{
@@ -84,6 +99,21 @@ func update(tasks []Task, id int, desc string)[]Task{
 	fmt.Println("No such id for any task. Try again.")
 	return tasks
 }
+
+func mark(tasks []Task, id int, mark string)[]Task{
+
+	for i, v := range tasks{
+		if v.Id == id {
+			tasks[i].Status = mark
+			updated, _ := json.MarshalIndent(tasks, "", " ")
+			os.WriteFile("tasks.json", updated, 0644)
+			return tasks
+		}
+	}
+	fmt.Println("No such id for any task. Try again.")
+	return tasks
+}
+
 
 /*
 Add, Update, and Delete tasks
@@ -142,9 +172,15 @@ func main() {
 			} else{
 				fmt.Println("Update what?! Try again.")
 			}
-
+		case "mark-in-progress":
+			id, _ := strconv.Atoi(task)
+			tasks = mark(tasks, id, "in-progress")
+		case "mark-done":
+			id, _ := strconv.Atoi(task)
+			tasks = mark(tasks, id, "done")
 		case "delete":
-			fmt.Println("delete")
+			id, _ := strconv.Atoi(task)
+			tasks = delete(id, tasks)
 		case "list":
 			fmt.Println("list")
 			if !found{
