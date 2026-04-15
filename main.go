@@ -19,6 +19,7 @@ type Task struct {
 	UpdatedAt   time.Time
 }
 
+//function used to delete tasks
 func delete(id int, tasks []Task)[]Task{
 
 	for i, v := range(tasks){
@@ -34,6 +35,7 @@ func delete(id int, tasks []Task)[]Task{
 	return tasks
 }
 
+//function used to add tasks
 func add(desc string, id int, tasks []Task) []Task {
 
 	task := Task{
@@ -51,6 +53,7 @@ func add(desc string, id int, tasks []Task) []Task {
 	return tasks
 }
 
+//function used to list tasks
 func list(cmd string){
 	list, err := os.ReadFile("tasks.json")
 	if err != nil{
@@ -85,6 +88,7 @@ func list(cmd string){
 	}
 }
 
+//function used to update tasks
 func update(tasks []Task, id int, desc string)[]Task{
 	
 	for i, v := range tasks{
@@ -100,6 +104,7 @@ func update(tasks []Task, id int, desc string)[]Task{
 	return tasks
 }
 
+//function used to assign a mark to tasks
 func mark(tasks []Task, id int, mark string)[]Task{
 
 	for i, v := range tasks{
