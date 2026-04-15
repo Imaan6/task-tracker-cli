@@ -65,15 +65,13 @@ func list(cmd string){
 		return 
 	}
 
-	if cmd == ""{
-		for _, v := range tasks{
+	for _ , v:= range tasks{
+		if cmd == "all"{
 			fmt.Println(v.Id,"-", v.Description)
+			continue
 		}
-	}else{
-		for _ , v:= range tasks{
-			if v.Status == status{
-				fmt.Println(v.Id,"-",v.Description)
-			}
+		if v.Status == status{
+			fmt.Println(v.Id,"-",v.Description)
 		}
 	}
 }
@@ -133,7 +131,6 @@ func main() {
 				tasks = add(strings.Trim(task, ""), id, tasks)
 			}
 			newTask, _ := json.MarshalIndent(tasks, "", " ")
-			//TODO: everytime a write a new task the whole thing get added to the json file instead of just the actual task, fix.
 			os.WriteFile("tasks.json", newTask, 0)
 		case "update":
 			fmt.Println("update")
@@ -143,11 +140,11 @@ func main() {
 			fmt.Println("delete")
 		case "list":
 			fmt.Println("list")
-			/*if len(cmd) ==2{
-				list(cmd[1])
+			if !found{
+				list("all")
 			}else{
-				list("")
-			}	*/		
+				list(task)
+			}
 		}
 	}
 }
