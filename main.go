@@ -35,9 +35,6 @@ func delete(id int, tasks []Task)[]Task{
 }
 
 func add(desc string, id int, tasks []Task) []Task {
-	fmt.Println("the descriptions is:", desc)
-	fmt.Println("the id is", id)
-	
 
 	task := Task{
 		Id: id,
@@ -48,6 +45,9 @@ func add(desc string, id int, tasks []Task) []Task {
 	}
 
 	tasks = append(tasks, task)
+	newTask, _ := json.MarshalIndent(tasks, "", " ")
+	os.WriteFile("tasks.json", newTask, 0)
+
 	return tasks
 }
 
@@ -114,28 +114,7 @@ func mark(tasks []Task, id int, mark string)[]Task{
 	return tasks
 }
 
-
-/*
-Add, Update, and Delete tasks
-
-Mark a task as in progress or done
-
-List all tasks
-List all tasks that are done
-List all tasks that are not done
-List all tasks that are in progress
-
-task-cli list done
-task-cli list todo
-task-cli list in-progress
-*/
-
 func main() {
-	/*
-		Marshall
-		verb
-		1.assemble and arrange (a group of people, especially troops) in order.
-	*/
 
 	var tasks []Task
 
@@ -157,15 +136,10 @@ func main() {
 		case "add":
 			id++;
 			if found{
-				//TODO: see if i can increment inside the id
 				tasks = add(strings.Trim(task, ""), id, tasks)
 			}
-			newTask, _ := json.MarshalIndent(tasks, "", " ")
-			os.WriteFile("tasks.json", newTask, 0)
 		case "update":
-			fmt.Println("update")
 			id, description, found := strings.Cut(task, " ")
-			fmt.Println(found, id, description)
 			idconverted, _:= strconv.Atoi(id)
 			if found{
 				tasks = update(tasks, idconverted, strings.Trim(description, `"`))
