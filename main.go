@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"strconv"
 	"strings"
-	"time"
 
 	"encoding/json"
 	"os"
@@ -15,8 +14,16 @@ type Task struct {
 	Id          int
 	Description string
 	Status      string
-	CreatedAt   time.Time
-	UpdatedAt   time.Time
+}
+
+func marshallAndWrite(tasks []Task) {
+	updated, err := json.MarshalIndent(tasks, "", " ")
+	if err != nil{
+		fmt.Println("error during marshall indent of json:", err)
+	}
+	if err := os.WriteFile("tasks.json", updated, 0644); err != nil{
+		fmt.Println("Error occured during WriteFile:", err)
+	}
 }
 
 //function used to delete tasks
@@ -25,8 +32,7 @@ func delete(id int, tasks []Task)[]Task{
 	for i, v := range(tasks){
 		if v.Id == id{
 			tasks = append(tasks[:i], tasks[i+1:]...)
-			updated, _ := json.MarshalIndent(tasks, "", " ")
-			os.WriteFile("tasks.json", updated, 0644)
+			marshallAndWrite(tasks)
 			return tasks
 		}
 	}
@@ -42,26 +48,21 @@ func add(desc string, id int, tasks []Task) []Task {
 		Id: id,
 		Description: desc,
 		Status: "todo",
-		CreatedAt: time.Now(),
-		UpdatedAt: time.Now(),
 	}
 
 	tasks = append(tasks, task)
-	newTask, _ := json.MarshalIndent(tasks, "", " ")
-	os.WriteFile("tasks.json", newTask, 0)
 
+	marshallAndWrite(tasks)
+	
 	return tasks
 }
 
 //function used to list tasks
 func list(cmd string){
-	list, err := os.ReadFile("tasks.json")
-	if err != nil{
-		return 
-	}
-	
 	var tasks []Task
 	var status string 
+
+	readAndUnmarshall(&tasks)
 
 	switch cmd{
 	case "done":
@@ -72,10 +73,6 @@ func list(cmd string){
 		status = "in-progress"
 	}
 	
-	err = json.Unmarshal(list, &tasks)
-	if err != nil{
-		return 
-	}
 
 	for _ , v:= range tasks{
 		if cmd == "all"{
@@ -94,8 +91,7 @@ func update(tasks []Task, id int, desc string)[]Task{
 	for i, v := range tasks{
 		if (v.Id == id){
 			tasks[i].Description = desc
-			updated, _ := json.MarshalIndent(tasks, "", " ")
-			os.WriteFile("tasks.json", updated, 0644)
+			marshallAndWrite(tasks)
 			return tasks
 		}
 	}
@@ -110,8 +106,7 @@ func mark(tasks []Task, id int, mark string)[]Task{
 	for i, v := range tasks{
 		if v.Id == id {
 			tasks[i].Status = mark
-			updated, _ := json.MarshalIndent(tasks, "", " ")
-			os.WriteFile("tasks.json", updated, 0644)
+			marshallAndWrite(tasks)
 			return tasks
 		}
 	}
@@ -119,49 +114,82 @@ func mark(tasks []Task, id int, mark string)[]Task{
 	return tasks
 }
 
+func readAndUnmarshall(tasks *[]Task){
+	data, err := os.ReadFile("tasks.json")
+	if err != nil{
+		fmt.Println("Error encountered when trying to read from file:", err)
+	}
+
+	json.Unmarshal(data, &tasks)
+}
+
 func main() {
 
 	var tasks []Task
-
-	id := 0
-
-	scanner := bufio.NewScanner(os.Stdin)
 	
-	file, err := os.Create("tasks.json")
-	if err != nil {
-		fmt.Println("Error creating file:", err)
+	
+	scanner := bufio.NewScanner(os.Stdin)
+	var file *os.File
+	if _, err := os.Stat("tasks.json"); os.IsNotExist(err){
+		file, err = os.Create("tasks.json")
+		if err != nil {
+			fmt.Println("Error creating file:", err)
+		}
 	}
-
+	
 	defer file.Close()
-
+	
+	id := 0
+	
 	for scanner.Scan() {
+		readAndUnmarshall(&tasks)
+
+		length := len(tasks)
+		if length != 0{
+			id = tasks[length - 1].Id
+		}
+
 		command := scanner.Text()
 		cmd, task, found := strings.Cut(command, " ")
+
 		switch cmd {
 		case "add":
+			fmt.Println("id :",id)
 			id++;
+			fmt.Println("id incremented:",id)
 			if found{
-				tasks = add(strings.Trim(task, ""), id, tasks)
+				tasks = add(strings.Trim(task, `"`), id, tasks)
 			}
 		case "update":
 			id, description, found := strings.Cut(task, " ")
-			idconverted, _:= strconv.Atoi(id)
-			if found{
+			idconverted, err := strconv.Atoi(id)
+			if err != nil{
+				fmt.Println("Error encountered during atoi conversion:", err)
+			}
+			if found {
 				tasks = update(tasks, idconverted, strings.Trim(description, `"`))
-			} else{
+			} else {
 				fmt.Println("Update what?! Try again.")
 			}
 		case "mark-in-progress":
-			id, _ := strconv.Atoi(task)
+			id, err := strconv.Atoi(task)
+			if err != nil{
+				fmt.Println("Error encountered during atoi conversion:", err)
+			}
 			tasks = mark(tasks, id, "in-progress")
 		case "mark-done":
-			id, _ := strconv.Atoi(task)
+			id, err := strconv.Atoi(task)
+			if err != nil{
+				fmt.Println("Error encountered during atoi conversion:", err)
+			}
 			tasks = mark(tasks, id, "done")
 		case "delete":
-			id, _ := strconv.Atoi(task)
+			id, err := strconv.Atoi(task)
+			if err != nil{
+				fmt.Println("Error encountered during atoi conversion:", err)
+			}
 			tasks = delete(id, tasks)
 		case "list":
-			fmt.Println("list")
 			if !found{
 				list("all")
 			}else{
