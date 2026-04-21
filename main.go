@@ -52,6 +52,7 @@ func add(desc string, id int, tasks []Task) []Task {
 		Description: desc,
 		Status: "todo",
 		CreatedAt: time.Now(),
+		UpdatedAt: time.Now(),
 	}
 
 	tasks = append(tasks, task)
