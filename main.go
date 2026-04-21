@@ -160,33 +160,33 @@ func main() {
 			}
 		case "update":
 			id, description, found := strings.Cut(task, " ")
-			idconverted, err := strconv.Atoi(id)
+			taskId, err := strconv.Atoi(id)
 			if err != nil{
 				fmt.Println("Error encountered during atoi conversion:", err)
 			}
 			if found {
-				tasks = update(tasks, idconverted, strings.Trim(description, `"`))
+				tasks = update(tasks, taskId, strings.Trim(description, `"`))
 			} else {
 				fmt.Println("Update what?! Try again.")
 			}
 		case "mark-in-progress":
-			id, err := strconv.Atoi(task)
+			taskId, err := strconv.Atoi(task)
 			if err != nil{
 				fmt.Println("Error encountered during atoi conversion:", err)
 			}
-			tasks = mark(tasks, id, "in-progress")
+			tasks = mark(tasks, taskId, "in-progress")
 		case "mark-done":
-			id, err := strconv.Atoi(task)
+			taskId, err := strconv.Atoi(task)
 			if err != nil{
 				fmt.Println("Error encountered during atoi conversion:", err)
 			}
-			tasks = mark(tasks, id, "done")
+			tasks = mark(tasks, taskId, "done")
 		case "delete":
-			id, err := strconv.Atoi(task)
+			taskId, err := strconv.Atoi(task)
 			if err != nil{
 				fmt.Println("Error encountered during atoi conversion:", err)
 			}
-			tasks = delete(id, tasks)
+			tasks = delete(taskId, tasks)
 		case "list":
 			if !found{
 				list("all")
