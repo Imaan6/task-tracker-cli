@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"strconv"
 	"strings"
+	"time"
 
 	"encoding/json"
 	"os"
@@ -14,6 +15,8 @@ type Task struct {
 	Id          int
 	Description string
 	Status      string
+	CreatedAt	time.Time
+	UpdatedAt	time.Time
 }
 
 func marshallAndWrite(tasks []Task) {
@@ -48,6 +51,7 @@ func add(desc string, id int, tasks []Task) []Task {
 		Id: id,
 		Description: desc,
 		Status: "todo",
+		CreatedAt: time.Now(),
 	}
 
 	tasks = append(tasks, task)
@@ -91,6 +95,7 @@ func update(tasks []Task, id int, desc string)[]Task{
 	for i, v := range tasks{
 		if (v.Id == id){
 			tasks[i].Description = desc
+			tasks[i].UpdatedAt = time.Now()
 			marshallAndWrite(tasks)
 			return tasks
 		}
