@@ -110,6 +110,7 @@ func mark(tasks []Task, id int, mark string)[]Task{
 	for i, v := range tasks{
 		if v.Id == id {
 			tasks[i].Status = mark
+			tasks[i].UpdatedAt = time.Now()
 			marshallAndWrite(tasks)
 			return tasks
 		}
