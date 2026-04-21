@@ -80,7 +80,7 @@ func list(cmd string){
 
 	for _ , v:= range tasks{
 		if cmd == "all"{
-			fmt.Println("ID:",v.Id,"-", v.Description)
+			fmt.Println("ID:",v.Id, "- STATUS:", v.Status, "\n", v.Description)
 			continue
 		}
 		if v.Status == status{
