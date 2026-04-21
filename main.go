@@ -102,7 +102,6 @@ func update(tasks []Task, id int, desc string)[]Task{
 
 //function used to assign a mark to tasks
 func mark(tasks []Task, id int, mark string)[]Task{
-
 	for i, v := range tasks{
 		if v.Id == id {
 			tasks[i].Status = mark
@@ -127,17 +126,11 @@ func main() {
 
 	var tasks []Task
 	
-	
 	scanner := bufio.NewScanner(os.Stdin)
-	var file *os.File
-	if _, err := os.Stat("tasks.json"); os.IsNotExist(err){
-		file, err = os.Create("tasks.json")
-		if err != nil {
-			fmt.Println("Error creating file:", err)
-		}
-	}
 	
-	defer file.Close()
+	if _, err := os.Stat("tasks.json"); os.IsNotExist(err){
+		marshallAndWrite(tasks)
+	}
 	
 	id := 0
 	
@@ -154,9 +147,7 @@ func main() {
 
 		switch cmd {
 		case "add":
-			fmt.Println("id :",id)
 			id++;
-			fmt.Println("id incremented:",id)
 			if found{
 				tasks = add(strings.Trim(task, `"`), id, tasks)
 			}
