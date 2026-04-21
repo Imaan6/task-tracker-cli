@@ -119,7 +119,9 @@ func readAndUnmarshall(tasks *[]Task){
 		fmt.Println("Error encountered when trying to read from file:", err)
 	}
 
-	json.Unmarshal(data, &tasks)
+	if err := json.Unmarshal(data, &tasks); err != nil{
+		fmt.Println("Error while unmarshalling:", err)
+	}
 }
 
 func main() {
